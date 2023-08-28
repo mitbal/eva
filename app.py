@@ -1,17 +1,17 @@
+import json
+
+import pandas as pd
 import streamlit as st
+import streamlit.components.v1 as components
 
 import looker_sdk
 from shortuuid import uuid
-
-from IPython.display import IFrame
-
-import json
-import vertexai
 from vertexai.language_models import TextGenerationModel
 
-import pandas as pd
 
 st.title('Executive Virtual Assistant - EVA')
+
+## Looker setup and initialization
 
 sdk = looker_sdk.init40('looker.ini')
 
@@ -19,14 +19,6 @@ model_name = st.selectbox(
     'Select Looker Model',
     ['mitochondrion_looker', 'thelook']
 )
-
-# model_name = 'mitochondrion_looker'
-# question = 'for each zip code, what is their total conversion'
-
-# question = 'what is the zip code with the highest total number of conversion?'
-question = st.text_input('question', 'what is the zip code with the highest total number of conversion?')
-
-# st.write(question)
 
 lookml_model = sdk.lookml_model(model_name)
 
@@ -52,6 +44,11 @@ for exp in explores:
         abc['fields'] += [dim.name]
         
     views += [abc]
+
+
+## Translate natural language query to looker query based on lookml definition above
+
+question = st.text_input('question', 'what is the zip code with the highest total number of conversion?')
 
 template = """
 {context}
@@ -141,7 +138,7 @@ json_query['vis_config'] = {
 query_result = sdk.create_query(json_query)
 
 look_query = {
-  "title": f'Visualization using Vertex Palm API_{uuid()[:8]}',
+  "title": f'Chart ID_{uuid()[:8]}',
   "user_id": "8",
   "description": "test",
   "public": True,
@@ -151,7 +148,7 @@ look_query = {
 }
 
 look_result = sdk.create_look(look_query)
-
+components.iframe(look_result['embed_url'])
 
 prompt = f"""
 {str(df)}
@@ -161,12 +158,5 @@ You are an expert data analyst. Based on the data above, answer this question.
 {question}
 """
 
-import streamlit.components.v1 as components
-
-components.iframe(look_result['embed_url'])
-
-# IFrame(look_result['embed_url'], width=700, height=300)
-
 answer = llm.predict(prompt, temperature=0)
-
 st.write(str(answer.text))
