@@ -1,5 +1,6 @@
 import json
 
+import numpy as np
 import pandas as pd
 import streamlit as st
 import streamlit.components.v1 as components
@@ -24,8 +25,7 @@ lookml_model = sdk.lookml_model(model_name)
 
 explores = [exp.name for exp in lookml_model.explores]
 
-views = []
-
+views = {}
 for exp in explores:
     
     explore = sdk.lookml_model_explore(
@@ -43,12 +43,36 @@ for exp in explores:
     for dim in explore.fields.measures:
         abc['fields'] += [dim.name]
         
-    views += [abc]
+    views[exp] = abc
 
+from vertexai.language_models import TextEmbeddingModel
+gecko = TextEmbeddingModel.from_pretrained('textembedding-gecko@001')
+ 
+for view_name, view_content in views.items():
+    view_embeddings = gecko.get_embeddings([str(view_content)])
+    views[view_name]['embedding'] = view_embeddings[0].values
 
 ## Translate natural language query to looker query based on lookml definition above
 
 question = st.text_input('question', 'what is the zip code with the highest total number of conversion?')
+
+q_embedding = gecko.get_embeddings([question])
+q_vector = q_embedding[0].values
+
+max_score = -1000000
+relevant_view = None
+for view_name, view_content in views.items():
+    view_vector = view_content['embedding']
+
+    score = np.dot(view_vector, q_vector)
+    # st.write(view_name, score)    
+
+    if score > max_score:
+        max_score = score
+        relevant_view = view_name
+
+winning_view = {key:views[relevant_view][key] for key in ['view', 'fields']}
+# st.write('Winning View', winning_view)
 
 template = """
 {context}
@@ -72,7 +96,7 @@ Output:
 """
 
 llm = TextGenerationModel.from_pretrained('text-bison@001')
-prompt = template.format(question=question, context=str(views))
+prompt = template.format(question=question, context=str(winning_view))
 response = llm.predict(prompt, temperature=0)
 
 
