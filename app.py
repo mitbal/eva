@@ -7,53 +7,62 @@ import streamlit.components.v1 as components
 
 import looker_sdk
 from shortuuid import uuid
+from vertexai.language_models import TextEmbeddingModel
 from vertexai.language_models import TextGenerationModel
 
+DEBUG = True
 
 st.title('Executive Virtual Assistant - EVA')
-
-## Looker setup and initialization
-
-sdk = looker_sdk.init40('looker.ini')
 
 model_name = st.selectbox(
     'Select Looker Model',
     ['mitochondrion_looker', 'thelook']
 )
+sdk = looker_sdk.init40('looker.ini')
 
-lookml_model = sdk.lookml_model(model_name)
-
-explores = [exp.name for exp in lookml_model.explores]
-
-views = {}
-for exp in explores:
-    
-    explore = sdk.lookml_model_explore(
-        lookml_model_name=model_name,
-        explore_name=exp
-    )
-    
-    abc = {}
-    abc['view'] = exp
-    abc['fields'] = []
-    
-    for dim in explore.fields.dimensions:
-        abc['fields'] += [dim.name]
-        
-    for dim in explore.fields.measures:
-        abc['fields'] += [dim.name]
-        
-    views[exp] = abc
-
-from vertexai.language_models import TextEmbeddingModel
+llm = TextGenerationModel.from_pretrained('text-bison@001')
 gecko = TextEmbeddingModel.from_pretrained('textembedding-gecko@001')
- 
-for view_name, view_content in views.items():
-    view_embeddings = gecko.get_embeddings([str(view_content)])
-    views[view_name]['embedding'] = view_embeddings[0].values
+
+## Looker setup and initialization
+@st.cache_data
+def init_looker(looker_model_name):
+
+    lookml_model = sdk.lookml_model(model_name)
+
+    explores = [exp.name for exp in lookml_model.explores]
+
+    views = {}
+    for exp in explores:
+        
+        explore = sdk.lookml_model_explore(
+            lookml_model_name=model_name,
+            explore_name=exp
+        )
+        
+        abc = {}
+        abc['view'] = exp
+        abc['fields'] = []
+        
+        for dim in explore.fields.dimensions:
+            abc['fields'] += [dim.name]
+            
+        for dim in explore.fields.measures:
+            abc['fields'] += [dim.name]
+            
+        views[exp] = abc
+
+    
+    
+    for view_name, view_content in views.items():
+        view_embeddings = gecko.get_embeddings([str(view_content)])
+        views[view_name]['embedding'] = view_embeddings[0].values
+
+    return views
+
+views = init_looker(model_name)
+
 
 ## Translate natural language query to looker query based on lookml definition above
-
 question = st.text_input('question', 'what is the zip code with the highest total number of conversion?')
 
 q_embedding = gecko.get_embeddings([question])
@@ -95,11 +104,11 @@ Input: {question}
 Output:
 """
 
-llm = TextGenerationModel.from_pretrained('text-bison@001')
 prompt = template.format(question=question, context=str(winning_view))
 response = llm.predict(prompt, temperature=0)
 
 
+# generate visualization using looker with the json payload above
 chart_options = ['looker_column' ,'looker_bar','looker_line','looker_scatter','looker_area','looker_pie','single_value','looker_grid','looker_google_map']
 
 chart_template = """
@@ -174,6 +183,7 @@ look_query = {
 look_result = sdk.create_look(look_query)
 components.iframe(look_result['embed_url'])
 
+# Answer the questions given above based on the dataframe returned from looker
 prompt = f"""
 {str(df)}
 
