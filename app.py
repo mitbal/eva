@@ -8,7 +8,7 @@ import streamlit.components.v1 as components
 import looker_sdk
 from shortuuid import uuid
 from vertexai.language_models import TextEmbeddingModel
-from vertexai.language_models import TextGenerationModel
+from vertexai.preview.language_models import TextGenerationModel
 
 DEBUG = True
 
@@ -20,7 +20,12 @@ model_name = st.selectbox(
 )
 sdk = looker_sdk.init40('looker.ini')
 
-llm = TextGenerationModel.from_pretrained('text-bison@001')
+vertex_model_name = st.selectbox(
+    'Select Vertex Model',
+    ['text-bison@001', 'text-bison-32k']
+)
+
+llm = TextGenerationModel.from_pretrained(vertex_model_name)
 gecko = TextEmbeddingModel.from_pretrained('textembedding-gecko@001')
 
 ## Looker setup and initialization
@@ -32,6 +37,7 @@ def init_looker(looker_model_name):
     explores = [exp.name for exp in lookml_model.explores]
 
     views = {}
+    total_fields = 0
     for exp in explores:
         
         explore = sdk.lookml_model_explore(
@@ -50,17 +56,19 @@ def init_looker(looker_model_name):
             abc['fields'] += [dim.name]
             
         views[exp] = abc
+        total_fields += len(abc['fields'])
 
-    
-    
     for view_name, view_content in views.items():
         view_embeddings = gecko.get_embeddings([str(view_content)])
         views[view_name]['embedding'] = view_embeddings[0].values
 
+    st.write(f'Processed {len(views)} views and {total_fields} of fields')
     return views
 
 views = init_looker(model_name)
 
+with st.expander('Complete Explores'):
+    st.write([{key:views[i][key] for key in ['view', 'fields']} for i in views.keys()])
 
 ## Translate natural language query to looker query based on lookml definition above
 question = st.text_input('question', 'what is the zip code with the highest total number of conversion?')
@@ -74,14 +82,14 @@ for view_name, view_content in views.items():
     view_vector = view_content['embedding']
 
     score = np.dot(view_vector, q_vector)
-    # st.write(view_name, score)    
+    # st.write(view_name, score)   
 
     if score > max_score:
         max_score = score
         relevant_view = view_name
 
 winning_view = {key:views[relevant_view][key] for key in ['view', 'fields']}
-# st.write('Winning View', winning_view)
+st.write(f'Most relevant view with score {max_score}', relevant_view)
 
 template = """
 {context}
@@ -107,6 +115,7 @@ Output:
 prompt = template.format(question=question, context=str(winning_view))
 response = llm.predict(prompt, temperature=0)
 
+st.write(f'Query', response.text)
 
 # generate visualization using looker with the json payload above
 chart_options = ['looker_column' ,'looker_bar','looker_line','looker_scatter','looker_area','looker_pie','single_value','looker_grid','looker_google_map']
@@ -192,5 +201,7 @@ You are an expert data analyst. Based on the data above, answer this question.
 {question}
 """
 
+st.dataframe(df.head(10))
+
 answer = llm.predict(prompt, temperature=0)
-st.write(str(answer.text))
+st.text_area('answer', str(answer.text))
