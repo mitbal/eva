@@ -16,7 +16,7 @@ st.title('Executive Virtual Assistant - EVA')
 
 model_name = st.selectbox(
     'Select Looker Model',
-    ['mitochondrion_looker', 'thelook']
+    ['mitochondrion_looker', 'thelook', 'retail_block_model']
 )
 sdk = looker_sdk.init40('looker.ini')
 
@@ -91,28 +91,10 @@ for view_name, view_content in views.items():
 winning_view = {key:views[relevant_view][key] for key in ['view', 'fields']}
 st.write(f'Most relevant view with score {max_score}', relevant_view)
 
-template = """
-{context}
+with open('looker_query.template', 'r') as f:
+    looker_query_template = f.read()
 
-You are an expert data analyst. Follow these instructions.
-Given the above LookML model file definition, construct a valid JSON. 
-The JSON should contains the correct view and only the necessary fields to answer the questions.
-
-Input: what is the total conversion for each channel?
-Output:
-{{
-"view": "marketing",
-"fields": [
-            "marketing.channel",
-            "marketing.total_conversion"
-        ]
-}}
-
-Input: {question}
-Output:
-"""
-
-prompt = template.format(question=question, context=str(winning_view))
+prompt = looker_query_template.format(question=question, context=str(winning_view))
 response = llm.predict(prompt, temperature=0)
 
 st.write(f'Query', response.text)
