@@ -65,7 +65,7 @@ def init_looker(looker_model_name):
         view_embeddings = gecko.get_embeddings([str(view_content)])
         views[view_name]['embedding'] = view_embeddings[0].values
 
-    st.write(f'Processed {len(views)} views and {total_fields} of fields')
+    st.write(f'Processed {len(views)} explores with {total_fields} of fields total')
     return views
 
 views = init_looker(model_name)
@@ -85,7 +85,7 @@ for view_name, view_content in views.items():
     view_vector = view_content['embedding']
 
     score = np.dot(view_vector, q_vector)
-    # st.write(view_name, score)   
+    # st.write(view_name, score)
 
     if score > max_score:
         max_score = score
@@ -94,13 +94,15 @@ for view_name, view_content in views.items():
 winning_view = {key:views[relevant_view][key] for key in ['view', 'fields']}
 st.write(f'Most relevant view with score {max_score}', relevant_view)
 
+if max_score < 0.5:
+    st.write('No relevant information is available in the data. Please try a different questions')
+    st.stop()
+
 with open('looker_query.template', 'r') as f:
     looker_query_template = f.read()
 
 prompt = looker_query_template.format(question=question, context=str(winning_view))
 response = llm.predict(prompt, temperature=0)
-
-st.write(f'Query', response.text)
 
 # generate visualization using looker with the json payload above
 chart_options = ['looker_column' ,'looker_bar','looker_line','looker_scatter','looker_area','looker_pie','single_value','looker_grid','looker_google_map']
@@ -161,7 +163,6 @@ chart_type = llm.predict(chart_prompt, temperature=0)
 json_query['vis_config'] = {
         'type': f'{chart_type.text.strip()}'
     }
-st.write('chart_type', chart_type.text)
 
 query_result = sdk.create_query(json_query)
 
