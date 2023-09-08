@@ -10,19 +10,22 @@ from shortuuid import uuid
 from vertexai.language_models import TextEmbeddingModel
 from vertexai.preview.language_models import TextGenerationModel
 
-DEBUG = True
+st.set_page_config(
+    page_title='EVA - Executive Virtual Assistant',
+    page_icon='random'
+)
 
 st.title('Executive Virtual Assistant - EVA')
 
 model_name = st.selectbox(
     'Select Looker Model',
-    ['mitochondrion_looker', 'thelook', 'retail_block_model']
+    ['mini_look', 'mitochondrion_looker', 'thelook', 'retail_block_model']
 )
 sdk = looker_sdk.init40('looker.ini')
 
 vertex_model_name = st.selectbox(
     'Select Vertex Model',
-    ['text-bison@001', 'text-bison-32k']
+    ['text-bison-32k', 'text-bison@001']
 )
 
 llm = TextGenerationModel.from_pretrained(vertex_model_name)
@@ -71,7 +74,7 @@ with st.expander('Complete Explores'):
     st.write([{key:views[i][key] for key in ['view', 'fields']} for i in views.keys()])
 
 ## Translate natural language query to looker query based on lookml definition above
-question = st.text_input('question', 'what is the zip code with the highest total number of conversion?')
+question = st.text_input('question', 'which product has the highest revenue?')
 
 q_embedding = gecko.get_embeddings([question])
 q_vector = q_embedding[0].values
@@ -145,7 +148,7 @@ Input:
 Output:
 """
 
-json_query = json.loads(str(response))
+json_query = json.loads(str(response.text))
 json_query['model'] = model_name
 
 output = sdk.run_inline_query('json', json_query)
@@ -156,10 +159,13 @@ chart_prompt = chart_template.format(dataframe_string=str(df))
 
 chart_type = llm.predict(chart_prompt, temperature=0)
 json_query['vis_config'] = {
-        'type': f'{chart_type}'
+        'type': f'{chart_type.text.strip()}'
     }
+st.write('chart_type', chart_type.text)
 
 query_result = sdk.create_query(json_query)
+
+st.write(json_query)
 
 look_query = {
   "title": f'Chart ID_{uuid()[:8]}',
