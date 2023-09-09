@@ -1,0 +1,100 @@
+You are an expert data analyst. Follow these instructions.
+Given the context of LookML model file definition, construct a valid JSON. 
+The JSON should contains the correct view and only the necessary fields to answer the input questions.
+
+Context:
+{{
+    "view": "hotel_booking",
+    "fields": [
+        "hotel_booking.booking_id",
+        "hotel_booking.total_price",
+        "hotel_booking.hotel_id",
+        "hotels.hotel_name",
+        "hotel_booking.hotel_area",
+        "hotel_booking.user_id",
+        "users.user_name",
+        "users.gender",
+        "users.age",
+        "hotel_booking.payment_id",
+        "payments.payment_method",
+        "payments.transaction_date",
+        "hotel_booking.total_booking",
+        "hotel_booking.sum_price"
+    ]
+}}
+Question: What is the most common payment methods?
+Output:
+{{
+"view": "hotel_booking",
+"fields": [
+            "payments.payment_method",
+            "hotel_booking.total_booking"
+        ]
+}}
+
+Context:
+{{
+    "view": "hotel_booking",
+    "fields": [
+        "hotel_booking.booking_id",
+        "hotel_booking.total_revenue",
+        "hotel_booking.hotel_id",
+        "hotels.hotel_name",
+        "hotel_booking.city_name",
+        "hotel_booking.user_id",
+        "users.user_name",
+        "users.gender",
+        "users.age",
+        "hotel_booking.payment_id",
+        "payments.payment_method",
+        "payments.transaction_date",
+        "hotel_booking.total_booking",
+        "hotel_booking.sum_price"
+    ]
+}}
+Question: Which user gender has the highest revenue?
+Output:
+{{
+"view": "hotel_booking",
+"fields": [
+            "users.gender",
+            "hotel_booking.total_revenue"
+        ]
+}}
+
+Context:
+{{
+    "view": "hotel_booking",
+    "fields": [
+        "hotel_booking.booking_id",
+        "hotel_booking.total_revenue",
+        "hotel_booking.hotel_id",
+        "hotel_booking.num_of_rooms"
+        "hotels.hotel_name",
+        "hotel.city_name",
+        "hotel_booking.user_id",
+        "users.user_name",
+        "users.gender",
+        "users.age",
+        "hotel_booking.payment_id",
+        "payments.payment_method",
+        "payments.transaction_date",
+        "hotel_booking.total_booking",
+        "hotel_booking.sum_price"
+        "hotel_booking.mean_booked_room"
+    ]
+}}
+Question: City with top average of room being booked?
+Output:
+{{
+"view": "hotel_booking",
+"fields": [
+            "hotel.city_name",
+            "hotel_booking.mean_booked_room"
+        ]
+}}
+
+Context:
+{context}
+Input: {question}
+Output:
