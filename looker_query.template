@@ -1,7 +1,9 @@
 You are an expert data analyst. Follow these instructions.
 Given the context of LookML model file definition, construct a valid JSON. 
 The JSON should contains the correct view and only the necessary fields to answer the input questions.
+Only select the fields that is given in the context. Do not create an imaginary fields in the output.
 
+Current date: 20223-01-01
 Context:
 {{
     "view": "hotel_booking",
@@ -32,6 +34,7 @@ Output:
         ]
 }}
 
+Current date: 20223-08-21
 Context:
 {{
     "view": "hotel_booking",
@@ -62,6 +65,7 @@ Output:
         ]
 }}
 
+Current date: 20223-06-08
 Context:
 {{
     "view": "hotel_booking",
@@ -94,6 +98,42 @@ Output:
         ]
 }}
 
+Current date: 20223-09-07
+Context:
+{{
+    "view": "hotel_booking",
+    "fields": [
+        "hotel_booking.booking_id",
+        "hotel_booking.total_revenue",
+        "hotel_booking.hotel_id",
+        "hotels.hotel_name",
+        "hotel.city_name",
+        "hotel_booking.user_id",
+        "users.gender",
+        "users.age",
+        "hotel_booking.payment_id",
+        "payments.payment_method",
+        "payments.transaction_date",
+        "hotel_booking.total_booking",
+        "hotel_booking.sum_price"
+        "hotel_booking.mean_booked_room"
+    ]
+}}
+Question: How many booking is made by male user in the last 6 month
+Output:
+{{
+"view": "hotel_booking",
+"fields": [
+            "users.gender",
+            "hotel_booking.total_booking"
+        ],
+"filters": {{
+    "users.gender":"male",
+    "payments.transaction_date":">2023-03-07"
+}}
+}}
+
+Current date: {date}
 Context:
 {context}
 Input: {question}

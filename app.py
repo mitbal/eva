@@ -1,4 +1,5 @@
 import json
+from datetime import datetime
 
 import numpy as np
 import pandas as pd
@@ -101,7 +102,9 @@ if max_score < 0.5:
 with open('looker_query.template', 'r') as f:
     looker_query_template = f.read()
 
-prompt = looker_query_template.format(question=question, context=str(winning_view))
+prompt = looker_query_template.format(question=question, 
+                                      context=str(winning_view),
+                                      date=datetime.today().strftime('%Y-%m-%d'))
 response = llm.predict(prompt, temperature=0)
 
 # generate visualization using looker with the json payload above
@@ -179,7 +182,7 @@ look_query = {
 }
 
 look_result = sdk.create_look(look_query)
-components.iframe(look_result['embed_url'])
+components.iframe(look_result['embed_url'], height=400, scrolling=True)
 
 # Answer the questions given above based on the dataframe returned from looker
 prompt = f"""
