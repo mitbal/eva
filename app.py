@@ -186,11 +186,22 @@ components.iframe(look_result['embed_url'], height=400, scrolling=True)
 
 # Answer the questions given above based on the dataframe returned from looker
 prompt = f"""
+You are an expert data analyst who are truthful.
+Based on the data above, answer the following question succinctly.
+If the answer is not obvious, do not make up stuff or print python code.
+
+Context:
+   year company  market_cap\n0  2022    BBRI         500\n1  2022    UNVR         600\n2  2022    ASII         400\n3  2023    BBRI         709\n4  2023    UNVR         165\n5  2023    ASII         242\n
+Question:
+What is the average market cap of the company with lowest market cap in 2022 all throughout the years?
+Answer:
+The company with the lowest market cap in 2022 is UNVR. The average market cap of UNVR all throughout the years is 381.5
+
+Context:
 {str(df)}
-
-You are an expert data analyst. Based on the data above, answer this question.
-
+Question:
 {question}
+Answer:
 """
 
 st.dataframe(df.head(10))
