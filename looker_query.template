@@ -129,7 +129,7 @@ Output:
         ],
 "filters": {{
     "users.gender":"male",
-    "payments.transaction_date":">2023-03-07"
+    "payments.transaction_date":"2023-03-07 to 20223-09-07"
 }}
 }}
 
