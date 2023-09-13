@@ -18,13 +18,13 @@ st.set_page_config(
 
 st.title('Executive Virtual Assistant - EVA')
 
-model_name = st.selectbox(
+model_name = st.sidebar.selectbox(
     'Select Looker Model',
     ['mini_look', 'mitochondrion_looker', 'thelook', 'retail_block_model']
 )
 sdk = looker_sdk.init40('looker.ini')
 
-vertex_model_name = st.selectbox(
+vertex_model_name = st.sidebar.selectbox(
     'Select Vertex Model',
     ['text-bison-32k', 'text-bison@001']
 )
@@ -204,7 +204,8 @@ Question:
 Answer:
 """
 
-st.dataframe(df.head(10))
+if chart_type.text.strip() != 'looker_grid':
+    st.dataframe(df.head(10))
 
 answer = llm.predict(prompt, temperature=0)
-st.text_area('answer', str(answer.text))
+st.text_area('answer', str(answer.text), disabled=True)
