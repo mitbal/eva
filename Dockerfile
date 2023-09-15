@@ -5,6 +5,7 @@ RUN pip3 install -r requirements.txt
 EXPOSE 8501
 COPY looker.ini ./looker.ini
 COPY looker_query.template ./looker_query.template
+COPY looker_viz.template ./looker_viz.template
 COPY app.py ./app.py
 ENTRYPOINT ["streamlit", "run"]
 CMD ["app.py"]
