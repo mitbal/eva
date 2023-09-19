@@ -3,7 +3,7 @@ Given the context of LookML model file definition, construct a valid JSON.
 The JSON should contains the correct view and only the necessary fields to answer the input questions.
 Only select the fields that is given in the context. Do not create an imaginary fields in the output.
 
-Current date: 20223-01-01
+Current date: 2023-01-01
 Context:
 {{
     "view": "hotel_booking",
@@ -34,7 +34,7 @@ Output:
         ]
 }}
 
-Current date: 20223-08-21
+Current date: 2023-08-21
 Context:
 {{
     "view": "hotel_booking",
@@ -65,7 +65,7 @@ Output:
         ]
 }}
 
-Current date: 20223-06-08
+Current date: 2023-06-08
 Context:
 {{
     "view": "hotel_booking",
@@ -98,7 +98,7 @@ Output:
         ]
 }}
 
-Current date: 20223-09-07
+Current date: 2023-09-07
 Context:
 {{
     "view": "hotel_booking",
@@ -129,7 +129,7 @@ Output:
         ],
 "filters": {{
     "users.gender":"male",
-    "payments.transaction_date":"2023-03-07 to 20223-09-07"
+    "payments.transaction_date":"2023-03-07 to 2023-09-07"
 }}
 }}
 
