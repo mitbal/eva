@@ -1,4 +1,5 @@
 import json
+import time
 from datetime import datetime
 
 import numpy as np
@@ -26,11 +27,12 @@ sdk = looker_sdk.init40('looker.ini')
 
 vertex_model_name = st.sidebar.selectbox(
     'Select Vertex Model',
-    ['text-bison-32k', 'text-bison@001']
+    ['text-bison@latest', 'text-bison@001', 'text-bison-32k']
 )
 
 llm = TextGenerationModel.from_pretrained(vertex_model_name)
-gecko = TextEmbeddingModel.from_pretrained('textembedding-gecko@001')
+# gecko = TextEmbeddingModel.from_pretrained('textembedding-gecko@001')
+gecko = TextEmbeddingModel.from_pretrained('textembedding-gecko@latest')
 
 ## Looker setup and initialization
 @st.cache_data
@@ -73,6 +75,8 @@ views = init_looker(model_name)
 
 with st.expander('Complete Explores'):
     st.write([{key:views[i][key] for key in ['view', 'fields']} for i in views.keys()])
+
+start_time = time.time()
 
 ## Translate natural language query to looker query based on lookml definition above
 question = st.text_input('question', 'which product has the highest revenue?')
@@ -118,7 +122,7 @@ output = sdk.run_inline_query('json', json_query)
 df = pd.DataFrame(json.loads(output))
 df.head()
 
-chart_prompt = chart_template.format(dataframe_string=str(df))
+chart_prompt = chart_template.format(dataframe_string=str(df), question=question)
 
 chart_type = llm.predict(chart_prompt, temperature=0)
 json_query['vis_config'] = {
@@ -166,4 +170,8 @@ if chart_type.text.strip() != 'looker_grid':
     st.dataframe(df.head(10))
 
 answer = llm.predict(prompt, temperature=0)
-st.text_area('answer', str(answer.text), disabled=True)
+st.text_area('answer', str(answer.text), disabled=False)
+
+end_time = time.time()
+
+st.write('Total processing time:', end_time - start_time)
