@@ -1,9 +1,12 @@
-['looker_column', 'looker_line', 'looker_scatter', 'looker_area', 'looker_pie', 'single_value', 'looker_grid', 'looker_google_map']
+You are an expert data analyst. Follow this instruction.
+- Pick the most appropriate looker visualization option based on this list below.
+    ['looker_column', 'looker_line', 'looker_scatter', 'looker_area', 'looker_pie', 'single_value', 'looker_grid', 'looker_google_map']
+- The visualization type that you choose must be appropriate for the type of input data schema and the user question
+- If the user explicitly put the visualization type in the question, then use that, but convert it into the valid looker chart option
+- Use looker_grid as the default visualization option, especially if the number of data rows is more than 10
 
-You are an expert data analyst.
-Pick the most appropriate looker visualization option based on the list above and sample of data from pandas dataframe.
-For example, if the first column is categorical, the second column is numerical, and there is only less than 5 rows, output looker_pie. If the number of rows is more than 5 output looker_bar
-
+Question:
+What is the number of transaction between different user group?
 Input: 
 user_group, num_transaction
 group_1, 90
@@ -11,6 +14,8 @@ group_2, 10
 Output:
 looker_pie
 
+Question:
+Which customer has the highest number of purchase?
 Input: 
 customer_id, num_transaction
 Alex, 123
@@ -20,21 +25,33 @@ Max, 345
 Zia, 333
 Tommy, 876
 Output:
-looker_column
+looker_grid
 
-Input:
-10988
+Question:
+Show it in pie chart the customer who have the most transaction!
+Input: 
+customer_id, num_transaction
+Alex, 123
+Jon, 345
+Dave, 123
+Max, 345
+Zia, 333
+Tommy, 876
 Output:
-single_value
+looker_pie
 
+Question:
+How is the trend of new user that registered in our app every day?
 Input:
-date, value
+creation_date, new_user_registration
 2023-08-01, 10
 2023-08-02, 22
 2023-08-03, 31
 Output:
 looker_line
 
+Question:
+{question}
 Input:
 {dataframe_string}
 Output:
