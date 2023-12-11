@@ -26,13 +26,16 @@ model_name = st.sidebar.selectbox(
 sdk = looker_sdk.init40('looker.ini')
 
 vertex_model_name = st.sidebar.selectbox(
-    'Select Vertex Model',
-    ['text-bison@latest', 'text-bison@001', 'text-bison-32k']
+    'Select Text Model',
+    ['text-unicorn@001', 'text-bison@002', 'text-bison@001']
 )
-
 llm = TextGenerationModel.from_pretrained(vertex_model_name)
-# gecko = TextEmbeddingModel.from_pretrained('textembedding-gecko@001')
-gecko = TextEmbeddingModel.from_pretrained('textembedding-gecko@latest')
+
+embedding_model_name = st.sidebar.selectbox(
+    'Select Embedding Model',
+    ['textembedding-gecko@002', 'textembedding-gecko@001', 'textembedding-gecko-multilingual@001']
+)
+gecko = TextEmbeddingModel.from_pretrained(embedding_model_name)
 
 ## Looker setup and initialization
 @st.cache_data
