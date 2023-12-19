@@ -82,7 +82,8 @@ with st.expander('Complete Explores'):
 start_time = time.time()
 
 ## Translate natural language query to looker query based on lookml definition above
-question = st.text_input('question', 'which product has the highest revenue?')
+default_question = 'top 10 product with highest revenue, show in pie chart'
+question = st.text_input('Put your question here', default_question)
 
 q_embedding = gecko.get_embeddings([question])
 q_vector = q_embedding[0].values
@@ -93,7 +94,6 @@ for view_name, view_content in views.items():
     view_vector = view_content['embedding']
 
     score = np.dot(view_vector, q_vector)
-    # st.write(view_name, score)
 
     if score > max_score:
         max_score = score
